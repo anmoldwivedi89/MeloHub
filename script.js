@@ -2,7 +2,7 @@ let currentSong = new Audio();
 
 async function getSongs() {
   // Make sure these match your file names EXACTLY
-  return ["Aaj Ki Raat - Copy.mp3", "Out of Time - Copy.mp3","pakistan.mp3","Ishq Jalakar.mp3","Aaj Ki Raat.mp3"];
+  return ["Iraaday","Ishq Jalakar","pal pal","millional","Raanjhanaa"];
 }
 
 const playMusic = (track, pause = false) => {
@@ -41,7 +41,7 @@ async function main() {
         <img class="invert" src="music.svg" alt="">
         <div class="info">
           <div style="width:91px">${song.replaceAll("%20", " ")}</div>
-          <div style="width:91px">Anmol</div>
+          <div style="width:91px">Artist</div>
         </div>
         <div class="playnow">
           <span>Play now</span>
