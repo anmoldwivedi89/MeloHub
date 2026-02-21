@@ -312,7 +312,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, onAuthStateChanged, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -336,13 +336,28 @@
         const successMessage = document.getElementById('successMessage');
         const loading = document.getElementById('loading');
 
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user && !localStorage.getItem('spotifyUser')) {
+                // If Firebase has user but localStorage doesn't (sync)
+                localStorage.setItem('spotifyUser', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL
+                }));
+            }
+            if (user) {
+                // Already logged in, go to home
+                window.location.href = 'Index.html';
+            }
+        });
+
         // Handle redirect result
         getRedirectResult(auth).then((result) => {
             if (result) {
                 const user = result.user;
-                successMessage.textContent = 'Login successful! Redirecting...';
-                successMessage.style.display = 'block';
-
+                console.log("Redirect result found user:", user.email);
                 localStorage.setItem('spotifyUser', JSON.stringify({
                     uid: user.uid,
                     email: user.email,
@@ -350,14 +365,16 @@
                     photoURL: user.photoURL
                 }));
 
-                setTimeout(() => {
-                    window.location.href = 'Index.html';
-                }, 1500);
+                window.location.href = 'Index.html';
+            } else {
+                console.log("No redirect result found.");
             }
         }).catch((error) => {
             console.error('Redirect Error:', error);
-            errorMessage.textContent = `Login failed: ${error.code}`;
-            errorMessage.style.display = 'block';
+            if (error.code !== 'auth/popup-closed-by-user') {
+                errorMessage.textContent = `Login failed: ${error.code}`;
+                errorMessage.style.display = 'block';
+            }
         });
 
         // Google Sign-In
