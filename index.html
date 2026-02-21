@@ -31,13 +31,30 @@
                 </ul>
             </div>
 
-            <div class="library bg-grey rounded m-1 p-1">
+            <div class="library rounded">
                 <div class="heading">
-                    <img class="invert" src="melohub_logo.svg" alt="Library">
-                    <span>Your Library</span>
+                    <img class="invert" src="playlist.svg" alt="">
+                    <h2>Your Library</h2>
                 </div>
+
+                <!-- Liked Songs Playlist Card -->
+                <div class="fav-playlist-card" id="favSidebarBtn">
+                    <div class="fav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="fav-info">
+                        <span class="fav-title">Liked Songs</span>
+                        <span class="fav-subtitle">Playlist • <span id="sidebarFavCount">0</span> songs</span>
+                    </div>
+                </div>
+
                 <div class="songList">
                     <ul>
+                        <!-- Songs will be listed here -->
                     </ul>
                 </div>
             </div>

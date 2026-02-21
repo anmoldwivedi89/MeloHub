@@ -192,10 +192,11 @@ function renderCards(songsArray, containerId) {
     container.innerHTML += cardHTML;
   });
 
-  // Update favorite count if in favorites section
+  // Update favorite counters
   if (containerId === "favoriteContainer") {
     document.getElementById("favCount").textContent = `${songsArray.length} ${songsArray.length === 1 ? 'song' : 'songs'}`;
   }
+  document.getElementById("sidebarFavCount").textContent = songsArray.length;
   // Re-add click listeners to cards
   container.querySelectorAll(".card").forEach(card => {
     card.addEventListener("click", (e) => {
@@ -242,6 +243,9 @@ function toggleFavorite(fileName, heartElement) {
     }
   }
   updateFavoritesStorage();
+
+  // Update sidebar count whenever a favorite is toggled
+  document.getElementById("sidebarFavCount").textContent = userFavorites.length;
 }
 
 function switchSection(sectionId) {
@@ -344,6 +348,10 @@ async function main() {
   // Sidebar navigation listeners
   document.getElementById("homeBtn").addEventListener("click", () => switchSection('home'));
   document.getElementById("favBtn").addEventListener("click", () => switchSection('fav'));
+  document.getElementById("favSidebarBtn").addEventListener("click", () => switchSection('fav'));
+
+  // Initialize sidebar count
+  document.getElementById("sidebarFavCount").textContent = userFavorites.length;
 
   // Menu listeners
   document.querySelector(".hamburger").addEventListener("click", () => {
