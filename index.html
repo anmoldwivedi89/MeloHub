@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="utility.css">
-    <title>Spotify - Web Player: Music for everyone</title>
+    <title>MeloHub - Web Player: Music for everyone</title>
 </head>
 
 <body>
@@ -16,7 +16,8 @@
                 <img width="30" src="close.svg" class="invert" alt="Close Menu">
             </div>
             <div class="home bg-grey rounded m-1 p-1">
-                <div class="logo"><img src="logo.svg" alt="Spotify Logo" class="invert"><span>Spotify</span></div>
+                <div class="logo"><img src="melohub_logo.svg" alt="MeloHub Logo" class="invert"><span>MeloHub</span>
+                </div>
                 <ul>
                     <li><img class="invert" src="home.svg" alt="Home">Home</li>
                     <li><img class="invert" src="search.svg" alt="Search">Search</li>
@@ -25,7 +26,7 @@
 
             <div class="library bg-grey rounded m-1 p-1">
                 <div class="heading">
-                    <img class="invert" src="logo.svg" alt="Library">
+                    <img class="invert" src="melohub_logo.svg" alt="Library">
                     <span>Your Library</span>
                 </div>
                 <div class="songList">
@@ -65,9 +66,14 @@
             </div>
 
             <div class="spotify-playlists">
-                <h1>Spotify Playlists</h1>
-                <div class="cardContainer">
-                    <!-- Cards will be generated dynamically by JavaScript -->
+                <h1>Hindi Hits</h1>
+                <div class="cardContainer" id="hindiContainer">
+                    <!-- Hindi cards will be generated here -->
+                </div>
+
+                <h1 style="margin-top: 40px;">English Pop</h1>
+                <div class="cardContainer" id="englishContainer">
+                    <!-- English cards will be generated here -->
                 </div>
             </div>
 

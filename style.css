@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Outfit:wght@400;700&family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap');
 
 /* --- Reset & Global --- */
 * {
@@ -15,13 +15,33 @@ body {
 }
 
 /* --- Utilities --- */
-.flex { display: flex; }
-.bg-black { background-color: black; }
-.bg-grey { background-color: #121212; }
-.rounded { border-radius: 8px; }
-.m-1 { margin: 5px; }
-.p-1 { padding: 15px; }
-.invert { filter: invert(1); }
+.flex {
+    display: flex;
+}
+
+.bg-black {
+    background-color: black;
+}
+
+.bg-grey {
+    background-color: #121212;
+}
+
+.rounded {
+    border-radius: 8px;
+}
+
+.m-1 {
+    margin: 5px;
+}
+
+.p-1 {
+    padding: 15px;
+}
+
+.invert {
+    filter: invert(1);
+}
 
 /* --- Layout --- */
 .container {
@@ -41,7 +61,8 @@ body {
 }
 
 .close {
-    display: none; /* Hidden on desktop */
+    display: none;
+    /* Hidden on desktop */
     position: absolute;
     right: 30px;
     top: 25px;
@@ -54,8 +75,44 @@ body {
     align-items: center;
     gap: 15px;
     margin-bottom: 20px;
-    font-weight: 700;
-    font-size: 1.2rem;
+    padding-left: 10px;
+}
+
+.logo img {
+    width: 45px;
+    height: 45px;
+    transform: rotate(-15deg) skewX(-10deg);
+    filter: drop-shadow(0 0 8px rgba(29, 185, 84, 0.6)) invert(1);
+    transition: all 0.3s ease;
+}
+
+.logo:hover img {
+    transform: rotate(0deg) scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(29, 185, 84, 1)) invert(1);
+}
+
+.logo span {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.2rem;
+    font-weight: 500;
+    /* Pacifico is naturally bold */
+    background: linear-gradient(to right, #1db954, #1ed760, #00bcd4, #bb66ff, #1db954);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-flow 3s linear infinite;
+    padding-bottom: 5px;
+}
+
+@keyframes gradient-flow {
+    0% {
+        background-position: 0% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
 }
 
 .home ul li {
@@ -67,7 +124,10 @@ body {
     font-weight: bold;
     cursor: pointer;
 }
-.home ul li img { width: 24px; }
+
+.home ul li img {
+    width: 24px;
+}
 
 /* Library Section */
 .library {
@@ -86,7 +146,10 @@ body {
     align-items: center;
     color: #b3b3b3;
 }
-.heading img { width: 24px; }
+
+.heading img {
+    width: 24px;
+}
 
 /* Song List */
 .songList {
@@ -105,14 +168,14 @@ body {
     gap: 12px;
     cursor: pointer;
     padding: 12px 10px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin: 10px 0;
     border-radius: 5px;
     transition: background-color 0.2s;
 }
 
 .songList ul li:hover {
-    background-color: rgba(255,255,255,0.05);
+    background-color: rgba(255, 255, 255, 0.05);
     border-color: white;
 }
 
@@ -128,11 +191,15 @@ body {
     align-items: center;
     gap: 10px;
 }
+
 .playnow span {
     font-size: 12px;
     display: none;
 }
-.songList ul li:hover .playnow span { display: block; }
+
+.songList ul li:hover .playnow span {
+    display: block;
+}
 
 /* --- Right Main Content --- */
 .right {
@@ -160,7 +227,8 @@ body {
 }
 
 .hamburger {
-    display: none; /* Hidden on desktop */
+    display: none;
+    /* Hidden on desktop */
     cursor: pointer;
     width: 30px;
 }
@@ -178,17 +246,29 @@ body {
     background: none;
     color: #a7a7a7;
 }
-.signbtn:hover { color: white; }
+
+.signbtn:hover {
+    color: white;
+}
 
 .loginbtn {
     background-color: white;
     color: black;
 }
-.loginbtn:hover { transform: scale(1.05); }
+
+.loginbtn:hover {
+    transform: scale(1.05);
+}
 
 /* Playlists */
-.spotify-playlists { padding: 20px; padding-bottom: 120px; }
-.spotify-playlists h1 { margin-bottom: 20px; }
+.spotify-playlists {
+    padding: 20px;
+    padding-bottom: 120px;
+}
+
+.spotify-playlists h1 {
+    margin-bottom: 20px;
+}
 
 .cardContainer {
     display: flex;
@@ -208,8 +288,8 @@ body {
     border: 2px solid transparent;
 }
 
-.card:hover { 
-    background-color: #282828; 
+.card:hover {
+    background-color: #282828;
 }
 
 .card.active {
@@ -237,6 +317,7 @@ body {
     color: #a7a7a7;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -250,12 +331,8 @@ body {
     transition: all 0.3s ease-out;
     transform: translateY(10px);
 }
-.card:hover .play {
-    opacity: 1;
-    transform: translateY(-50px);
-}
 
-.card.active .play {
+.card:hover .play {
     opacity: 1;
     transform: translateY(-50px);
 }
@@ -311,10 +388,10 @@ body {
     text-overflow: ellipsis;
 }
 
-.songtime { 
+.songtime {
     text-align: right;
     width: 100px;
-    font-size: 14px; 
+    font-size: 14px;
 }
 
 .songsbuttons {
@@ -322,7 +399,10 @@ body {
     gap: 20px;
     cursor: pointer;
 }
-.songsbuttons img:hover { transform: scale(1.1); }
+
+.songsbuttons img:hover {
+    transform: scale(1.1);
+}
 
 
 /* --- RESPONSIVE MEDIA QUERIES --- */
@@ -331,21 +411,33 @@ body {
 @media (max-width: 1200px) {
     .left {
         position: absolute;
-        left: -130%; /* Hidden off-screen */
+        left: -130%;
+        /* Hidden off-screen */
         width: 350px;
         height: 100vh;
         z-index: 100;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
     }
-    
-    .left.active { left: 0; } /* JS toggles this */
-    
-    .close { display: block; }
-    
-    .right { width: 100vw; margin: 0; }
-    
-    .hamburger { display: block; }
-    
+
+    .left.active {
+        left: 0;
+    }
+
+    /* JS toggles this */
+
+    .close {
+        display: block;
+    }
+
+    .right {
+        width: 100vw;
+        margin: 0;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
     /* Playbar Full Width on Tablet */
     .playbar {
         left: 2%;
@@ -355,31 +447,52 @@ body {
 
 /* Mobile Devices */
 @media (max-width: 600px) {
-    .header { padding: 10px; }
-    
-    /* Make cards fit nicely */
-    .cardContainer { 
-        justify-content: center;
-        gap: 15px; 
-    }
-    .card { 
-        width: 45%; /* Two cards per row */
+    .header {
         padding: 10px;
     }
-    
+
+    /* Make cards fit nicely */
+    .cardContainer {
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .card {
+        width: 45%;
+        /* Two cards per row */
+        padding: 10px;
+    }
+
     /* Font size adjustments */
-    .button button { padding: 6px 15px; font-size: 13px; }
-    .spotify-playlists h1 { font-size: 1.5rem; }
-    
+    .button button {
+        padding: 6px 15px;
+        font-size: 13px;
+    }
+
+    .spotify-playlists h1 {
+        font-size: 1.5rem;
+    }
+
     /* Mobile Playbar */
     .playbar {
         padding: 10px;
         bottom: 5px;
     }
-    .songinfo { max-width: 80px; }
-    .songtime { font-size: 12px; }
-    .songsbuttons img { width: 25px; }
-    
+
+    .songinfo {
+        max-width: 80px;
+    }
+
+    .songtime {
+        font-size: 12px;
+    }
+
+    .songsbuttons img {
+        width: 25px;
+    }
+
     /* Mobile Left Sidebar (Full Width) */
-    .left { width: 100vw; }
+    .left {
+        width: 100vw;
+    }
 }
