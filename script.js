@@ -113,6 +113,12 @@ const songs = [
 // Initialize favorites from localStorage
 let userFavorites = JSON.parse(localStorage.getItem('userFavorites')) || [];
 
+// Safety check: Reset favorites if no user is logged in (prevents phantom favorites)
+if (!localStorage.getItem('spotifyUser')) {
+  userFavorites = [];
+  localStorage.setItem('userFavorites', JSON.stringify([]));
+}
+
 function updateFavoritesStorage() {
   localStorage.setItem('userFavorites', JSON.stringify(userFavorites));
 }
@@ -214,7 +220,7 @@ function renderCards(songsArray, containerId) {
 function toggleFavorite(fileName, heartElement) {
   const user = localStorage.getItem('spotifyUser');
   if (!user) {
-    alert("Please log in to add favorites!");
+    alert("Please log in to add songs to your Favorites!");
     window.location.href = 'login.html';
     return;
   }
