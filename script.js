@@ -110,6 +110,13 @@ const songs = [
   }
 ];
 
+// Initialize favorites from localStorage
+let userFavorites = JSON.parse(localStorage.getItem('userFavorites')) || [];
+
+function updateFavoritesStorage() {
+  localStorage.setItem('userFavorites', JSON.stringify(userFavorites));
+}
+
 const playMusic = (index, pause = false) => {
   if (index < 0 || index >= songs.length) return;
 
@@ -138,7 +145,8 @@ const playMusic = (index, pause = false) => {
 
 // Update active card visual feedback
 function updateActiveCard() {
-  document.querySelectorAll(".card").forEach((card, idx) => {
+  document.querySelectorAll(".card").forEach((card) => {
+    let idx = parseInt(card.getAttribute("data-index"));
     if (idx === currentSongIndex) {
       card.classList.add("active");
     } else {
@@ -147,30 +155,24 @@ function updateActiveCard() {
   });
 }
 
-// Listen for errors
-currentSong.addEventListener("error", (e) => {
-  console.error("Error loading audio file:", currentSong.src);
-  alert("Error: Song not found! Check the console (F12) for details.");
-});
+// Function to render cards to a specific container
+function renderCards(songsArray, containerId) {
+  let container = document.querySelector(`#${containerId}`);
+  if (!container) return;
+  container.innerHTML = "";
 
-// Auto play next song when current ends
-currentSong.addEventListener("ended", () => {
-  if (currentSongIndex < songs.length - 1) {
-    playMusic(currentSongIndex + 1);
-  }
-});
+  songsArray.forEach((song) => {
+    // Find original index in global songs array
+    const globalIndex = songs.findIndex(s => s.file === song.file);
+    const isFav = userFavorites.includes(song.file);
 
-async function main() {
-  // Generate song cards in sections
-  let hindiContainer = document.querySelector("#hindiContainer");
-  let englishContainer = document.querySelector("#englishContainer");
-
-  hindiContainer.innerHTML = "";
-  englishContainer.innerHTML = "";
-
-  songs.forEach((song, index) => {
     const cardHTML = `
-      <div class="card" data-index="${index}">
+      <div class="card" data-index="${globalIndex}">
+        <div class="fav-heart ${isFav ? 'active' : ''}" data-file="${song.file}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </div>
         <div class="play">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="green">
             <circle cx="12" cy="12" r="10" />
@@ -181,21 +183,83 @@ async function main() {
         <h2>${song.name}</h2>
         <p>${song.artist}</p>
       </div>`;
-
-    if (song.language === "Hindi") {
-      hindiContainer.innerHTML += cardHTML;
-    } else {
-      englishContainer.innerHTML += cardHTML;
-    }
+    container.innerHTML += cardHTML;
   });
 
-  // Add click listeners to cards using their data-index
-  document.querySelectorAll(".card").forEach(card => {
-    card.addEventListener("click", () => {
+  // Re-add click listeners to cards
+  container.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      // Don't play if heart was clicked
+      if (e.target.closest('.fav-heart')) return;
+
       let index = parseInt(card.getAttribute("data-index"));
       playMusic(index);
     });
   });
+
+  // Add listeners to heart icons
+  container.querySelectorAll(".fav-heart").forEach(heart => {
+    heart.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const fileName = heart.getAttribute("data-file");
+      toggleFavorite(fileName, heart);
+    });
+  });
+}
+
+function toggleFavorite(fileName, heartElement) {
+  const user = localStorage.getItem('spotifyUser');
+  if (!user) {
+    alert("Please log in to add favorites!");
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const index = userFavorites.indexOf(fileName);
+  if (index === -1) {
+    userFavorites.push(fileName);
+    heartElement.classList.add('active');
+    heartElement.querySelector('svg').setAttribute('fill', 'currentColor');
+  } else {
+    userFavorites.splice(index, 1);
+    heartElement.classList.remove('active');
+    heartElement.querySelector('svg').setAttribute('fill', 'none');
+
+    // If we are in favorites section, re-render it
+    if (document.getElementById('favSection').style.display === 'block') {
+      const favSongs = songs.filter(s => userFavorites.includes(s.file));
+      renderCards(favSongs, "favoriteContainer");
+    }
+  }
+  updateFavoritesStorage();
+}
+
+function switchSection(sectionId) {
+  document.getElementById('homeSection').style.display = sectionId === 'home' ? 'block' : 'none';
+  document.getElementById('favSection').style.display = sectionId === 'fav' ? 'block' : 'none';
+
+  if (sectionId === 'fav') {
+    const favSongs = songs.filter(s => userFavorites.includes(s.file));
+    renderCards(favSongs, "favoriteContainer");
+  }
+}
+
+// Listen for errors
+currentSong.addEventListener("error", (e) => {
+  console.error("Error loading audio file:", currentSong.src);
+});
+
+// Auto play next song when current ends
+currentSong.addEventListener("ended", () => {
+  if (currentSongIndex < songs.length - 1) {
+    playMusic(currentSongIndex + 1);
+  }
+});
+
+async function main() {
+  // Generate song cards in sections initially
+  renderCards(songs.filter(s => s.language === "Hindi"), "hindiContainer");
+  renderCards(songs.filter(s => s.language === "English"), "englishContainer");
 
   // Populate library songlist
   let songUL = document.querySelector(".songList ul");
@@ -217,8 +281,9 @@ async function main() {
   });
 
   // Add click listeners to library songs
-  Array.from(document.querySelectorAll(".songList li")).forEach((li, index) => {
+  Array.from(document.querySelectorAll(".songList li")).forEach((li) => {
     li.addEventListener("click", () => {
+      let index = parseInt(li.getAttribute("data-index"));
       playMusic(index);
     });
   });
@@ -265,6 +330,18 @@ async function main() {
     document.querySelector(".circle").style.left = percent + "%";
     currentSong.currentTime = (currentSong.duration * percent) / 100;
   });
+
+  // Sidebar navigation listeners
+  document.getElementById("homeBtn").addEventListener("click", () => switchSection('home'));
+  document.getElementById("favBtn").addEventListener("click", () => switchSection('fav'));
+
+  // Menu listeners
+  document.querySelector(".hamburger").addEventListener("click", () => {
+    document.querySelector(".left").style.left = "0"
+  })
+  document.querySelector(".close").addEventListener("click", () => {
+    document.querySelector(".left").style.left = "-120%"
+  })
 }
 
 function secondsToMinutesSeconds(seconds) {
@@ -273,13 +350,5 @@ function secondsToMinutesSeconds(seconds) {
   const secs = Math.floor(seconds % 60);
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
-
-// Menu listeners
-document.querySelector(".hamburger").addEventListener("click", () => {
-  document.querySelector(".left").style.left = "0"
-})
-document.querySelector(".close").addEventListener("click", () => {
-  document.querySelector(".left").style.left = "-120%"
-})
 
 main();

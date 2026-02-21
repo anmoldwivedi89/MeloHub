@@ -392,6 +392,13 @@
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
 
+            // Check if running via file:// protocol
+            if (window.location.protocol === 'file:') {
+                errorMessage.innerHTML = '<strong>Security Error:</strong> Google Sign-Up does not work when opening HTML files directly. <br><br>Please use a local server like "Live Server" in VS Code or "python -m http.server".';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
@@ -411,7 +418,8 @@
                 }, 1500);
 
             } catch (error) {
-                let errorMsg = 'Google sign-up failed. Please try again.';
+                console.error('Google Sign-In Error:', error);
+                let errorMsg = `Google sign-up failed: ${error.code}`;
 
                 if (error.code === 'auth/popup-closed-by-user') {
                     errorMsg = 'Sign-up cancelled.';
@@ -419,6 +427,10 @@
                     errorMsg = 'Popup blocked. Please allow popups for this site.';
                 } else if (error.code === 'auth/account-exists-with-different-credential') {
                     errorMsg = 'An account already exists with this email.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorMsg = 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
+                } else if (error.code === 'auth/invalid-api-key') {
+                    errorMsg = 'The API Key in your code is invalid. Check your Firebase config.';
                 }
 
                 errorMessage.textContent = errorMsg;

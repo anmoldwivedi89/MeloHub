@@ -123,10 +123,22 @@ body {
     padding-top: 14px;
     font-weight: bold;
     cursor: pointer;
+    transition: color 0.3s;
 }
 
-.home ul li img {
+.home ul li img,
+.home ul li svg {
     width: 24px;
+    transition: transform 0.3s;
+}
+
+.home ul li:hover {
+    color: white;
+}
+
+.home ul li:hover img,
+.home ul li:hover svg {
+    transform: scale(1.1);
 }
 
 /* Library Section */
@@ -145,10 +157,20 @@ body {
     margin-bottom: 20px;
     align-items: center;
     color: #b3b3b3;
+    transition: color 0.3s;
+}
+
+.heading:hover {
+    color: white;
 }
 
 .heading img {
     width: 24px;
+    transition: transform 0.3s;
+}
+
+.heading:hover img {
+    transform: scale(1.1);
 }
 
 /* Song List */
@@ -322,19 +344,47 @@ body {
     overflow: hidden;
 }
 
-/* Play Button on Card */
-.play {
+/* Play & Heart Buttons on Card */
+.play,
+.fav-heart {
     position: absolute;
-    right: 20px;
     bottom: 20px;
     opacity: 0;
     transition: all 0.3s ease-out;
     transform: translateY(10px);
+    z-index: 5;
 }
 
-.card:hover .play {
+.play {
+    right: 20px;
+}
+
+.fav-heart {
+    right: 70px;
+    /* Positioned next to play button */
+    color: #b3b3b3;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card:hover .play,
+.card:hover .fav-heart {
     opacity: 1;
     transform: translateY(-50px);
+}
+
+.fav-heart:hover {
+    color: #1db954;
+    transform: scale(1.2) translateY(-50px) !important;
+}
+
+.fav-heart.active {
+    color: #1ed760;
+    opacity: 1;
 }
 
 /* --- Playbar --- */

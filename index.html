@@ -19,8 +19,15 @@
                 <div class="logo"><img src="melohub_logo.svg" alt="MeloHub Logo" class="invert"><span>MeloHub</span>
                 </div>
                 <ul>
-                    <li><img class="invert" src="home.svg" alt="Home">Home</li>
+                    <li id="homeBtn"><img class="invert" src="home.svg" alt="Home">Home</li>
                     <li><img class="invert" src="search.svg" alt="Search">Search</li>
+                    <li id="favBtn"><svg class="invert" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.72-8.72 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                            </path>
+                        </svg>Favorites</li>
                 </ul>
             </div>
 
@@ -65,7 +72,7 @@
                 </div>
             </div>
 
-            <div class="spotify-playlists">
+            <div id="homeSection" class="spotify-playlists">
                 <h1>Hindi Hits</h1>
                 <div class="cardContainer" id="hindiContainer">
                     <!-- Hindi cards will be generated here -->
@@ -74,6 +81,13 @@
                 <h1 style="margin-top: 40px;">English Pop</h1>
                 <div class="cardContainer" id="englishContainer">
                     <!-- English cards will be generated here -->
+                </div>
+            </div>
+
+            <div id="favSection" class="spotify-playlists" style="display: none;">
+                <h1>My Favorites</h1>
+                <div class="cardContainer" id="favoriteContainer">
+                    <!-- Favorite cards will be generated here -->
                 </div>
             </div>
 
