@@ -268,7 +268,7 @@
 <body>
     <div class="login-container">
         <div class="logo">
-            <a href="Index.html">
+            <a href="index.html">
                 <h1>🎵 MeloHub</h1>
             </a>
             <p>Login to continue listening</p>
@@ -364,7 +364,7 @@
             }
             if (user) {
                 // Already logged in, go to home
-                window.location.href = 'Index.html';
+                window.location.href = 'index.html';
             }
         });
 
@@ -381,7 +381,7 @@
                     photoURL: user.photoURL
                 }));
 
-                window.location.href = 'Index.html';
+                window.location.href = 'index.html';
             } else if (localStorage.getItem('loginAttempt')) {
                 // If we attempted login but got no result after redirect
                 console.log("No redirect result found despite attempt.");
@@ -445,7 +445,7 @@
                 }));
 
                 setTimeout(() => {
-                    window.location.href = 'Index.html';
+                    window.location.href = 'index.html';
                 }, 1500);
 
             } catch (error) {
@@ -479,7 +479,7 @@
         // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = 'Index.html';
+                window.location.href = 'index.html';
             }
         });
     </script>
