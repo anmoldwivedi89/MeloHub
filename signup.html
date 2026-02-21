@@ -293,6 +293,16 @@
                 font-size: 2rem;
             }
         }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .otp-hint {
+            color: #b3b3b3;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
@@ -334,26 +344,38 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" placeholder="Enter your email" required>
+                <label for="email">Email or Phone Number</label>
+                <input type="text" id="email" placeholder="Email or phone (with +country code)" required>
+                <div class="otp-hint">e.g. +91 9876543210 for phone</div>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Create a password (min 6 characters)" required
-                    minlength="6">
-                <div class="password-strength">
-                    <div class="password-strength-bar" id="strengthBar"></div>
+            <div id="passwordSection">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Create a password (min 6 characters)">
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+            <div id="otpSection" class="hidden">
+                <div class="form-group">
+                    <label for="otp">Verification Code (OTP)</label>
+                    <input type="text" id="otp" placeholder="Enter 6-digit code">
+                </div>
             </div>
 
-            <button type="submit" class="btn-signup">Sign Up</button>
-            <div class="loading" id="loading">Creating your account</div>
+            <div id="recaptcha-container"></div>
+
+            <button type="submit" class="btn-signup" id="mainSignupBtn">Sign Up</button>
+            <button type="button" id="verifyOtpBtn" class="btn-signup hidden">Verify OTP</button>
+            <div class="loading" id="loading">Processing</div>
         </form>
 
         <div class="terms">
@@ -369,7 +391,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithRedirect, getRedirectResult, onAuthStateChanged, setPersistence, browserLocalPersistence, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithRedirect, getRedirectResult, onAuthStateChanged, setPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPhoneNumber, RecaptchaVerifier } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -381,7 +403,6 @@
             appId: "1:38288570502:web:af34f2be9f79c6356fb907"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
@@ -389,6 +410,7 @@
         setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence Error:", err));
 
         const googleProvider = new GoogleAuthProvider();
+        let confirmationResult = null;
 
         // Get form elements
         const signupForm = document.getElementById('signupForm');
@@ -397,19 +419,29 @@
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
+        const otpInput = document.getElementById('otp');
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
         const loading = document.getElementById('loading');
         const strengthBar = document.getElementById('strengthBar');
 
+        const passwordSection = document.getElementById('passwordSection');
+        const otpSection = document.getElementById('otpSection');
+        const mainSignupBtn = document.getElementById('mainSignupBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+
+        // Initialize reCAPTCHA
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible'
+        });
+
         // Check if user is already logged in
         onAuthStateChanged(auth, (user) => {
             if (user && !localStorage.getItem('spotifyUser')) {
-                // Sync localStorage
                 localStorage.setItem('spotifyUser', JSON.stringify({
                     uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || user.email.split('@')[0],
+                    email: user.email || user.phoneNumber,
+                    displayName: user.displayName || user.email?.split('@')[0] || "MeloHub User",
                     photoURL: user.photoURL
                 }));
             }
@@ -421,45 +453,21 @@
         // Handle redirect result
         getRedirectResult(auth).then((result) => {
             if (result) {
-                localStorage.removeItem('loginAttempt'); // Success!
-                const user = result.user;
-                console.log("Redirect result found user:", user.email);
-                localStorage.setItem('spotifyUser', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || user.email.split('@')[0],
-                    photoURL: user.photoURL
-                }));
-
-                window.location.href = 'index.html';
-            } else if (localStorage.getItem('loginAttempt')) {
-                // If we attempted login but got no result after redirect
-                console.log("No redirect result found despite attempt.");
                 localStorage.removeItem('loginAttempt');
+                window.location.href = 'index.html';
             }
         }).catch((error) => {
             console.error('Redirect Error:', error);
-            if (error.code !== 'auth/popup-closed-by-user') {
-                errorMessage.textContent = `Sign-up failed: ${error.code}`;
-                errorMessage.style.display = 'block';
-            }
+            errorMessage.textContent = `Sign-up failed: ${error.code}`;
+            errorMessage.style.display = 'block';
         });
 
         // Google Sign-In
         googleSignInBtn.addEventListener('click', async () => {
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
-
-            // Check if running via file:// protocol
-            if (window.location.protocol === 'file:') {
-                errorMessage.innerHTML = '<strong>Security Error:</strong> Google Sign-Up does not work when opening HTML files directly. <br><br>Please use a local server like "Live Server" in VS Code or "python -m http.server".';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
             try {
                 localStorage.setItem('loginAttempt', 'true');
-                // Using Redirect for mobile stable experience
                 await signInWithRedirect(auth, googleProvider);
             } catch (error) {
                 console.error('Sign-Up Error:', error);
@@ -472,7 +480,6 @@
         passwordInput.addEventListener('input', () => {
             const password = passwordInput.value;
             let strength = 0;
-
             if (password.length >= 6) strength++;
             if (password.length >= 10) strength++;
             if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
@@ -480,90 +487,100 @@
             if (/[^a-zA-Z0-9]/.test(password)) strength++;
 
             strengthBar.className = 'password-strength-bar';
-            if (strength <= 2) {
-                strengthBar.classList.add('strength-weak');
-            } else if (strength <= 4) {
-                strengthBar.classList.add('strength-medium');
+            if (strength <= 2) strengthBar.classList.add('strength-weak');
+            else if (strength <= 4) strengthBar.classList.add('strength-medium');
+            else strengthBar.classList.add('strength-strong');
+        });
+
+        // Main Form Submit (Email Signup or Send Phone OTP)
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identifier = emailInput.value.trim();
+            const name = nameInput.value.trim();
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            if (identifier.includes('@')) {
+                // Email Flow
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                if (password !== confirmPassword) {
+                    errorMessage.textContent = 'Passwords do not match!';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                loading.textContent = "Creating account...";
+                loading.style.display = 'block';
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, identifier, password);
+                    const user = userCredential.user;
+                    await updateProfile(user, { displayName: name });
+                    localStorage.setItem('spotifyUser', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: name
+                    }));
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    loading.style.display = 'none';
+                    errorMessage.textContent = "Sign-up failed: " + error.code;
+                    errorMessage.style.display = 'block';
+                }
             } else {
-                strengthBar.classList.add('strength-strong');
+                // Phone Flow - Send OTP
+                loading.textContent = "Sending OTP...";
+                loading.style.display = 'block';
+                const appVerifier = window.recaptchaVerifier;
+                try {
+                    confirmationResult = await signInWithPhoneNumber(auth, identifier, appVerifier);
+                    loading.style.display = 'none';
+                    successMessage.textContent = "OTP Sent to " + identifier;
+                    successMessage.style.display = 'block';
+
+                    // Show OTP fields, hide password section
+                    passwordSection.classList.add('hidden');
+                    otpSection.classList.remove('hidden');
+                    mainSignupBtn.classList.add('hidden');
+                    verifyOtpBtn.classList.remove('hidden');
+                } catch (error) {
+                    loading.style.display = 'none';
+                    errorMessage.textContent = "Phone error: " + error.code + ". Use +[code][number]";
+                    errorMessage.style.display = 'block';
+                }
             }
         });
 
-        // Handle form submission
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        // Verify OTP Button for Signup
+        verifyOtpBtn.addEventListener('click', async () => {
+            const code = otpInput.value.trim();
             const name = nameInput.value.trim();
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                errorMessage.textContent = 'Passwords do not match!';
+            if (code.length < 6) {
+                errorMessage.textContent = "Please enter 6-digit OTP";
                 errorMessage.style.display = 'block';
                 return;
             }
 
-            // Hide previous messages
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
+            loading.textContent = "Verifying...";
             loading.style.display = 'block';
+            errorMessage.style.display = 'none';
 
             try {
-                // Create user with Firebase
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Update user profile with name
-                await updateProfile(user, {
-                    displayName: name
-                });
-
-                // Show success message
-                successMessage.textContent = 'Account created successfully! Redirecting...';
-                successMessage.style.display = 'block';
-                loading.style.display = 'none';
-
-                // Store user info
+                const result = await confirmationResult.confirm(code);
+                const user = result.user;
+                // Update profile name for phone user
+                await updateProfile(user, { displayName: name });
                 localStorage.setItem('spotifyUser', JSON.stringify({
                     uid: user.uid,
-                    email: user.email,
+                    email: user.phoneNumber,
                     displayName: name
                 }));
-
-                // Redirect to main page
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-
+                window.location.href = 'index.html';
             } catch (error) {
                 loading.style.display = 'none';
-
-                // Handle errors
-                let errorMsg = 'An error occurred. Please try again.';
-
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMsg = 'This email is already registered. Please login instead.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMsg = 'Invalid email address.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMsg = 'Password is too weak. Use at least 6 characters.';
-                        break;
-                    case 'auth/operation-not-allowed':
-                        errorMsg = 'Email/password accounts are not enabled.';
-                        break;
-                }
-
-                errorMessage.textContent = errorMsg;
+                errorMessage.textContent = "Invalid OTP code.";
                 errorMessage.style.display = 'block';
             }
         });
-
-
     </script>
 </body>
 
