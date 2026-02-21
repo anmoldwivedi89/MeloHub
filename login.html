@@ -312,7 +312,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, onAuthStateChanged, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, onAuthStateChanged, setPersistence, browserLocalPersistence, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -326,6 +326,10 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
+        // Ensure session persists locally
+        setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence Error:", err));
+
         const googleProvider = new GoogleAuthProvider();
 
         const loginForm = document.getElementById('loginForm');
@@ -356,6 +360,7 @@
         // Handle redirect result
         getRedirectResult(auth).then((result) => {
             if (result) {
+                localStorage.removeItem('loginAttempt'); // Success!
                 const user = result.user;
                 console.log("Redirect result found user:", user.email);
                 localStorage.setItem('spotifyUser', JSON.stringify({
@@ -366,8 +371,11 @@
                 }));
 
                 window.location.href = 'Index.html';
-            } else {
-                console.log("No redirect result found.");
+            } else if (localStorage.getItem('loginAttempt')) {
+                // If we attempted login but got no result after redirect
+                console.log("No redirect result found despite attempt.");
+                // alert("Authentication timed out or was blocked. Please check bridge/cookie settings.");
+                localStorage.removeItem('loginAttempt');
             }
         }).catch((error) => {
             console.error('Redirect Error:', error);
@@ -390,6 +398,7 @@
             }
 
             try {
+                localStorage.setItem('loginAttempt', 'true');
                 // Using Redirect for mobile stability
                 await signInWithRedirect(auth, googleProvider);
             } catch (error) {
