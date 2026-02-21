@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- Liked Songs Playlist Card -->
-                <div class="fav-playlist-card" id="favSidebarBtn">
+                <div class="fav-playlist-card" id="favSidebarBtn" style="display: none;">
                     <div class="fav-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
                             <path
@@ -172,8 +172,9 @@
                 const displayName = user.displayName || user.email.split('@')[0];
                 userName.textContent = `Hello, ${displayName}`;
 
-                // Show user profile, hide auth buttons
+                // Show user profile and liked songs, hide auth buttons
                 userProfile.style.display = 'flex';
+                document.getElementById('favSidebarBtn').style.display = 'flex';
                 authButtons.style.display = 'none';
 
                 // Store user info in localStorage
@@ -187,8 +188,9 @@
                 // Comment out the next line if you want to allow browsing without login
                 // window.location.href = 'login.html';
 
-                // Show auth buttons, hide user profile
+                // Show auth buttons, hide user profile and liked songs
                 userProfile.style.display = 'none';
+                document.getElementById('favSidebarBtn').style.display = 'none';
                 authButtons.style.display = 'block';
                 localStorage.removeItem('spotifyUser');
             }
