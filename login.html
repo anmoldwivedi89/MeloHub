@@ -312,7 +312,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -336,6 +336,30 @@
         const successMessage = document.getElementById('successMessage');
         const loading = document.getElementById('loading');
 
+        // Handle redirect result
+        getRedirectResult(auth).then((result) => {
+            if (result) {
+                const user = result.user;
+                successMessage.textContent = 'Login successful! Redirecting...';
+                successMessage.style.display = 'block';
+
+                localStorage.setItem('spotifyUser', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL
+                }));
+
+                setTimeout(() => {
+                    window.location.href = 'Index.html';
+                }, 1500);
+            }
+        }).catch((error) => {
+            console.error('Redirect Error:', error);
+            errorMessage.textContent = `Login failed: ${error.code}`;
+            errorMessage.style.display = 'block';
+        });
+
         // Google Sign-In
         googleSignInBtn.addEventListener('click', async () => {
             errorMessage.style.display = 'none';
@@ -349,38 +373,11 @@
             }
 
             try {
-                const result = await signInWithPopup(auth, googleProvider);
-                const user = result.user;
-
-                successMessage.textContent = 'Google sign-in successful! Redirecting...';
-                successMessage.style.display = 'block';
-
-                localStorage.setItem('spotifyUser', JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || user.email.split('@')[0],
-                    photoURL: user.photoURL
-                }));
-
-                setTimeout(() => {
-                    window.location.href = 'Index.html';
-                }, 1500);
-
+                // Using Redirect for mobile stability
+                await signInWithRedirect(auth, googleProvider);
             } catch (error) {
-                console.error('Google Sign-In Error:', error);
-                let errorMsg = `Google sign-in failed: ${error.code}`;
-
-                if (error.code === 'auth/popup-closed-by-user') {
-                    errorMsg = 'Sign-in cancelled.';
-                } else if (error.code === 'auth/popup-blocked') {
-                    errorMsg = 'Popup blocked. Please allow popups for this site.';
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
-                } else if (error.code === 'auth/invalid-api-key') {
-                    errorMsg = 'The API Key in your code is invalid. Check your Firebase config.';
-                }
-
-                errorMessage.textContent = errorMsg;
+                console.error('Sign-In Error:', error);
+                errorMessage.textContent = `Error: ${error.code}`;
                 errorMessage.style.display = 'block';
             }
         });

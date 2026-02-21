@@ -358,7 +358,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -387,22 +387,10 @@
         const loading = document.getElementById('loading');
         const strengthBar = document.getElementById('strengthBar');
 
-        // Google Sign-In
-        googleSignInBtn.addEventListener('click', async () => {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-
-            // Check if running via file:// protocol
-            if (window.location.protocol === 'file:') {
-                errorMessage.innerHTML = '<strong>Security Error:</strong> Google Sign-Up does not work when opening HTML files directly. <br><br>Please use a local server like "Live Server" in VS Code or "python -m http.server".';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
+        // Handle redirect result
+        getRedirectResult(auth).then((result) => {
+            if (result) {
                 const user = result.user;
-
                 successMessage.textContent = 'Google sign-up successful! Redirecting...';
                 successMessage.style.display = 'block';
 
@@ -416,24 +404,31 @@
                 setTimeout(() => {
                     window.location.href = 'Index.html';
                 }, 1500);
+            }
+        }).catch((error) => {
+            console.error('Redirect Error:', error);
+            errorMessage.textContent = `Sign-up failed: ${error.code}`;
+            errorMessage.style.display = 'block';
+        });
 
+        // Google Sign-In
+        googleSignInBtn.addEventListener('click', async () => {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            // Check if running via file:// protocol
+            if (window.location.protocol === 'file:') {
+                errorMessage.innerHTML = '<strong>Security Error:</strong> Google Sign-Up does not work when opening HTML files directly. <br><br>Please use a local server like "Live Server" in VS Code or "python -m http.server".';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Using Redirect for mobile stable experience
+                await signInWithRedirect(auth, googleProvider);
             } catch (error) {
-                console.error('Google Sign-In Error:', error);
-                let errorMsg = `Google sign-up failed: ${error.code}`;
-
-                if (error.code === 'auth/popup-closed-by-user') {
-                    errorMsg = 'Sign-up cancelled.';
-                } else if (error.code === 'auth/popup-blocked') {
-                    errorMsg = 'Popup blocked. Please allow popups for this site.';
-                } else if (error.code === 'auth/account-exists-with-different-credential') {
-                    errorMsg = 'An account already exists with this email.';
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = 'This domain is not authorized in Firebase Console (Authentication > Settings > Authorized domains).';
-                } else if (error.code === 'auth/invalid-api-key') {
-                    errorMsg = 'The API Key in your code is invalid. Check your Firebase config.';
-                }
-
-                errorMessage.textContent = errorMsg;
+                console.error('Sign-Up Error:', error);
+                errorMessage.textContent = `Error: ${error.code}`;
                 errorMessage.style.display = 'block';
             }
         });
